@@ -6,12 +6,16 @@ import com.cvm.springbootwebtut.springbootwebtut.entities.EmployeeEntity;
 import com.cvm.springbootwebtut.springbootwebtut.reposittories.EmployeeRepositry;
 import com.cvm.springbootwebtut.springbootwebtut.services.EmployeeServices;
 import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.Optional;
 
 @RestController
 public class EmployeeController {
@@ -89,9 +93,19 @@ public class EmployeeController {
 
 
     @GetMapping("employee/{emplId}")
-    public EmployeeDto getEmployeeById(@PathVariable long emplId){
-        return  employeeServices.getEmployeeById(emplId);
+    public ResponseEntity<EmployeeDto> getEmployeeById(@PathVariable long emplId){
+     Optional<EmployeeDto> employeeDto= Optional.ofNullable(employeeServices.getEmployeeById(emplId));
+      return  employeeDto
+              .map(employeeDto1->ResponseEntity.ok(employeeDto1))
+              .orElseThrow(()->new NoSuchElementException("employee not found"));
     }
+
+    @ExceptionHandler
+    public  ResponseEntity<String> handelEmployeeNotFound (NoSuchElementException exception){
+   return  new ResponseEntity<>("employee not found ", HttpStatus.NOT_FOUND);
+    }
+
+
 
 
     @GetMapping("employee")
